@@ -14,9 +14,6 @@ export class User {
   @Column({ type: 'varchar', length: 40 })
   email: string;
 
-  @Column({ type: 'int' })
-  age: number;
-
   @Column({ type: 'varchar' })
   password: string;
 

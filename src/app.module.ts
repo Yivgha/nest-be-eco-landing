@@ -16,8 +16,8 @@ import { Deal } from './deals/entities/deal.entity';
       dest: './uploads', // destination folder where uploaded files will be stored
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), // specify the directory path
-      serveRoot: '/uploads', // specify the base URL
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
