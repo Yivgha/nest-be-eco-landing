@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -16,24 +17,28 @@ import { Deal } from './deals/entities/deal.entity';
       dest: './uploads', // destination folder where uploaded files will be stored
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
+      rootPath: join(__dirname, '..', 'uploads'), // specify the directory path
+      serveRoot: '/uploads', // specify the base URL
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      password: 'postgres',
-      username: 'postgres',
-      entities: [User, Deal],
-      database: 'postgres',
-      synchronize: true,
-      logging: true,
+    ConfigModule.forRoot({ isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('PG_HOST'),
+        port: parseInt(configService.get('PG_PORT')),
+        username: configService.get('PG_USER'),
+        password: configService.get('PG_PASSWORD'),
+        database: configService.get('PG_DATABASE'),
+        entities: [User, Deal],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     UserModule,
     DealsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConfigModule],
 })
 export class AppModule {}
