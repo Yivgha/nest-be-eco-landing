@@ -10,6 +10,7 @@ import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { DealsModule } from './deals/deals.module';
 import { Deal } from './deals/entities/deal.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { Deal } from './deals/entities/deal.entity';
     }),
     UserModule,
     DealsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigModule],
