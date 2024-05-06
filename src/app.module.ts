@@ -15,11 +15,11 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     MulterModule.register({
-      dest: './uploads', // destination folder where uploaded files will be stored
+      dest: './src/uploads',
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), // specify the directory path
-      serveRoot: '/uploads', // specify the base URL
+      rootPath: join(__dirname, '..', 'src', 'uploads'),
+      serveRoot: '/uploads',
     }),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({

@@ -8,8 +8,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:3030',
-      'https://eco-landing-fe-942b0a9f4bb6.herokuapp.com/',
-      'https://eco-landing-8272c7ed5cfa.herokuapp.com/',
+      'https://eco-landing-be-010e040111c7.herokuapp.com/',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],

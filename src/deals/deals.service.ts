@@ -5,6 +5,7 @@ import { CreateDealDto } from './dto/create-deal.dto';
 import { UpdateDealDto } from './dto/update-deal.dto';
 import { Deal } from './entities/deal.entity';
 import * as fs from 'fs-extra';
+import * as path from 'path';
 
 @Injectable()
 export class DealsService {
@@ -24,12 +25,29 @@ export class DealsService {
     deal.ticket_dhs = createDealDto.ticket_dhs;
     deal.days_left = createDealDto.days_left;
 
-    // Check if file exists and is not empty
+    // Assuming file is received from the request body or via Multer
     if (file && file.buffer.length > 0) {
       // Save the file to a specified location on the server
-      const filePath = `uploads/${file.originalname}`;
-      await fs.writeFile(filePath, file.buffer);
-      deal.deal_img_path = filePath; // Assign the file path to the deal_img_path field
+      const fileName = file.originalname;
+      const uploadDir = path.join(__dirname, '..', 'uploads'); // Construct the path to the uploads directory
+      const filePath = path.join(uploadDir, fileName); // Construct the full path to the uploaded file
+
+      // Ensure the uploads directory exists, if not create it
+      try {
+        await fs.mkdir(uploadDir, { recursive: true });
+      } catch (error) {
+        console.error('Error creating uploads directory:', error);
+        // Handle error (e.g., log it, return an error response)
+      }
+
+      try {
+        // Write the file to the uploads directory
+        await fs.writeFile(filePath, file.buffer);
+        deal.deal_img_path = `/uploads/${fileName}`; // Assign the relative file path to the deal_img_path field
+      } catch (error) {
+        console.error('Error saving file:', error);
+        // Handle error (e.g., log it, return an error response)
+      }
     }
 
     return this.dealsRepository.save(deal);
