@@ -12,7 +12,11 @@ async function bootstrap() {
     //   'https://eco-landing-be-010e040111c7.herokuapp.com/'
     // ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Access-Control-Allow-Origin',
+    ],
     credentials: true,
   });
 
