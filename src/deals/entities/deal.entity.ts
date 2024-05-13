@@ -23,6 +23,6 @@ export class Deal {
   @Column({ type: 'varchar' })
   days_left: string;
 
-  @Column({ type: 'varchar', length: 300, nullable: true }) // nullable: true allows null values
+  @Column({ type: 'varchar', length: 300, nullable: true })
   deal_img_path: string;
 }

@@ -1,23 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { UpdateDealDto } from './dto/update-deal.dto';
 import { Deal } from './entities/deal.entity';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import { Storage } from '@google-cloud/storage';
 
 @Injectable()
 export class DealsService {
   constructor(
     @InjectRepository(Deal) private readonly dealsRepository: Repository<Deal>,
   ) {}
+  storage = new Storage();
 
   async createDeal(
     createDealDto: CreateDealDto,
     file: Express.Multer.File,
   ): Promise<Deal> {
     const deal: Deal = new Deal();
+
     deal.name = createDealDto.name;
     deal.total_dhs = createDealDto.total_dhs;
     deal.yield_amount = createDealDto.yield_amount;
@@ -25,32 +26,34 @@ export class DealsService {
     deal.ticket_dhs = createDealDto.ticket_dhs;
     deal.days_left = createDealDto.days_left;
 
-    // Assuming file is received from the request body or via Multer
     if (file && file.buffer.length > 0) {
-      // Save the file to a specified location on the server
       const fileName = file.originalname;
-      const uploadDir = path.join(__dirname, '..', 'uploads'); // Construct the path to the uploads directory
-      const filePath = path.join(uploadDir, fileName); // Construct the full path to the uploaded file
+      const objectName = `uploads/${fileName}`;
 
-      // Ensure the uploads directory exists, if not create it
-      try {
-        await fs.mkdir(uploadDir, { recursive: true });
-      } catch (error) {
-        console.error('Error creating uploads directory:', error);
-        // Handle error (e.g., log it, return an error response)
-      }
+      const bucketName = 'fastapi-python-be-test-uploads-folder';
+      const fileUpload = this.storage.bucket(bucketName).file(objectName);
+      const stream = fileUpload.createWriteStream({
+        metadata: {
+          contentType: file.mimetype,
+        },
+      });
 
-      try {
-        // Write the file to the uploads directory
-        await fs.writeFile(filePath, file.buffer);
-        deal.deal_img_path = `/uploads/${fileName}`; // Assign the relative file path to the deal_img_path field
-      } catch (error) {
-        console.error('Error saving file:', error);
-        // Handle error (e.g., log it, return an error response)
-      }
+      stream.on('error', (err) => {
+        console.error('Error uploading image:', err);
+        throw new InternalServerErrorException('Error uploading image');
+      });
+
+      stream.on('finish', async () => {
+        deal.deal_img_path = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+        await this.dealsRepository.save(deal);
+      });
+
+      stream.end(file.buffer);
+    } else {
+      await this.dealsRepository.save(deal);
     }
 
-    return this.dealsRepository.save(deal);
+    return deal;
   }
 
   findAllDeals(): Promise<Deal[]> {
@@ -70,6 +73,8 @@ export class DealsService {
     deal.ticket_dhs = updateDealDto.ticket_dhs;
     deal.days_left = updateDealDto.days_left;
     deal.id = id;
+    deal.deal_img_path = updateDealDto.deal_img_path;
+
     return this.dealsRepository.save(deal);
   }
 
